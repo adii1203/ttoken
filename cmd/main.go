@@ -18,11 +18,18 @@ import (
 	"github.com/adii1203/ttoken/pkg/validator"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/joho/godotenv"
 )
+
+func init() {
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal("error loding .env")
+	}
+}
 
 func main() {
 	app := &http.Server{
-		Addr:    "0.0.0.0:5000",
+		Addr:    os.Getenv("APP_ADDRESS"),
 		Handler: server(),
 	}
 
