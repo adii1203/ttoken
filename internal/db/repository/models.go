@@ -26,3 +26,11 @@ type Project struct {
 	Name      string
 	CreatedAt pgtype.Timestamp
 }
+
+type User struct {
+	ID        uuid.UUID
+	Email     string
+	FirstName string
+	LastName  pgtype.Text
+	ClerkID   pgtype.Text
+}

@@ -13,9 +13,13 @@ import (
 	key_service "github.com/adii1203/ttoken/internal/app/key/service"
 	project_handler "github.com/adii1203/ttoken/internal/app/project/api"
 	project_service "github.com/adii1203/ttoken/internal/app/project/service"
+	user_handler "github.com/adii1203/ttoken/internal/app/user/api"
+	user_servise "github.com/adii1203/ttoken/internal/app/user/service"
 	"github.com/adii1203/ttoken/internal/db"
 	"github.com/adii1203/ttoken/internal/db/repository"
+	"github.com/adii1203/ttoken/pkg/clerk"
 	"github.com/adii1203/ttoken/pkg/validator"
+	clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
@@ -75,6 +79,8 @@ func server() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
+	clerk.InitClerk()
+
 	db := db.InitDB()
 	repo := repository.New(db)
 
@@ -86,11 +92,18 @@ func server() http.Handler {
 	projectService := project_service.NewProjectService(repo)
 	projectHandler := project_handler.NewProjectHandler(projectService, validator)
 
+	userService := user_servise.NewUserService(repo)
+	userHandler := user_handler.NewUserHandler(userService)
+
 	router := chi.NewRouter()
 
+	r.Post("/webhook/clerk", userHandler.ClerkHandler)
+
 	router.Group(func(r chi.Router) {
+		r.Use(clerkhttp.RequireHeaderAuthorization())
 		r.Post("/key.create", keyHandler.CreateKeyHandler)
 	})
+
 	router.Group(func(r chi.Router) {
 		r.Post("/project.create", projectHandler.CreateProjectHandler)
 	})
