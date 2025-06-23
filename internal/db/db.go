@@ -8,9 +8,15 @@ import (
 )
 
 func connectDb() (*pgx.Conn, error) {
+	dns := ""
+	config, err := pgx.ParseConfig(dns)
+	if err != nil {
+		return nil, err
+	}
 
-	dns := "postgresql://postgres.refgvcbesudvjixvhqit:IAJib3bpxETDkR3l@aws-0-ap-south-1.pooler.supabase.com:5432/postgres"
-	db, err := pgx.Connect(context.Background(), dns)
+	config.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
+
+	db, err := pgx.ConnectConfig(context.Background(), config)
 
 	if err != nil {
 		return nil, err
